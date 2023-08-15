@@ -1,46 +1,40 @@
 #![cfg_attr(not(feature = "std"), no_std, no_main)]
 #[cfg_attr(feature = "cargo-clippy", allow(clippy::new_without_default))]
 #[ink::contract]
+mod basics {
+    #[derive(PartialEq, Debug, Eq, Clone, scale::Encode, scale::Decode)]
+    #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+    pub enum Error {
+        NoValueTransferred,
+    }
 
-mod environment_helpers {
-    // estas funciones siempre estan disponibles en ink
     #[ink(storage)]
-    pub struct EnvironmentHelpers {}
+    pub struct Basics {
+        balance: Balance,
+    }
 
-    impl EnvironmentHelpers {
+    impl Basics {
         #[ink(constructor)]
         pub fn new() -> Self {
-            Self {}
+            Self { balance: 0 }
         }
 
         #[ink(message)]
-        pub fn get_address(&self) -> AccountId {
-            self.env().account_id()
+        pub fn get_balance(&self) -> Balance {
+            self.balance
         }
 
-        #[ink(message)]
-        pub fn get_native_balance(&self) -> Balance {
-            self.env().balance()
-        }
+        #[ink(message, payable)]
+        pub fn deposit(&mut self) -> Result<(), Error> { // el &mut modifica el storage
+            let transferred_value: Balance = self.env().transferred_value();
 
-        #[ink(message)]
-        pub fn get_current_block_number(&self) -> BlockNumber {
-            self.env().block_number()
-        }
+            if transferred_value == 0 { // si se envian 0 tokens genera error
+                return Err(Error::NoValueTransferred);
+            }
 
-        #[ink(message)]
-        pub fn get_current_block_timestamp(&self) -> Timestamp {
-            self.env().block_timestamp()
-        }
+            self.balance += transferred_value;
 
-        #[ink(message)]
-        pub fn get_caller(&self) -> AccountId {
-            self.env().caller()
-        }
-
-        #[ink(message)]
-        pub fn is_contract(&self, account_id: AccountId) -> bool {
-            self.env().is_contract(&account_id)
+            Ok(()) // si el mesaje termina bien se ejecuta la transacción
         }
     }
 }
