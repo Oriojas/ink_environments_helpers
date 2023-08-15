@@ -1,8 +1,9 @@
 #![cfg_attr(not(feature = "std"), no_std, no_main)]
 #[cfg_attr(feature = "cargo-clippy", allow(clippy::new_without_default))]
 #[ink::contract]
-mod environment_helpers {
 
+mod environment_helpers {
+    // estas funciones siempre estan disponibles en ink
     #[ink(storage)]
     pub struct EnvironmentHelpers {}
 
